@@ -13,6 +13,7 @@
 
  Date: 11/05/2023 15:48:15
 */
+use mall;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
