@@ -31,7 +31,7 @@ public class SpringDocConfig implements WebMvcConfigurer {
                         .license(new License().name("Apache 2.0")
                                 .url("https://github.com/macrozheng/mall-learning")))
                 .externalDocs(new ExternalDocumentation()
-                        .description("SpringBoot实战电商项目mall（60K+Star）全套文档")
+                        .description("mall后台相关接口文档")
                         .url("http://www.macrozheng.com"))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
