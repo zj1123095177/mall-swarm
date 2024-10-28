@@ -59,5 +59,13 @@ export function updateOrderNote(params) {
     url:'/order/update/note',
     method:'post',
     params:params
-  })
+  });
+}
+
+export function listOrderStatistics(params) {
+  return request({
+    url:'/order/list/order/statistics',
+    method:'get',
+    params:params
+  });
 }

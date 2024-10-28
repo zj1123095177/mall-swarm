@@ -110,4 +110,13 @@ public class OmsOrderController {
         }
         return CommonResult.failed();
     }
+
+    @Operation(summary = "根据日期筛选订单统计")
+    @RequestMapping(value = "/list/order/statistics", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<List<OmsOrderStatistics>> listOrderStatistics(@RequestParam String startDate,
+                                                                      @RequestParam String endDate) {
+        List<OmsOrderStatistics> res = orderService.listOrderStatistics(startDate, endDate);
+        return CommonResult.success(res);
+    }
 }

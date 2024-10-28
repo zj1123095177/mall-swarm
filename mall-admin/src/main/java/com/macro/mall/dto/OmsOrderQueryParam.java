@@ -23,4 +23,8 @@ public class OmsOrderQueryParam {
     private Integer sourceType;
     @Schema(title = "订单提交时间")
     private String createTime;
+    @Schema(title = "订单统计筛选开始时间")
+    private String startDate;
+    @Schema(title = "订单统计筛选结束时间")
+    private String endDate;
 }

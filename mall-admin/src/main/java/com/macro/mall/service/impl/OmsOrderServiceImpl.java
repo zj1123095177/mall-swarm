@@ -1,6 +1,8 @@
 package com.macro.mall.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.github.pagehelper.PageHelper;
+import com.macro.mall.common.utils.DateTimeUtils;
 import com.macro.mall.dao.OmsOrderDao;
 import com.macro.mall.dao.OmsOrderOperateHistoryDao;
 import com.macro.mall.dto.*;
@@ -10,11 +12,12 @@ import com.macro.mall.model.OmsOrder;
 import com.macro.mall.model.OmsOrderExample;
 import com.macro.mall.model.OmsOrderOperateHistory;
 import com.macro.mall.service.OmsOrderService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -149,5 +152,42 @@ public class OmsOrderServiceImpl implements OmsOrderService {
         history.setNote("修改备注信息："+note);
         orderOperateHistoryMapper.insert(history);
         return count;
+    }
+
+    /**
+     * 根据日期筛选订单统计
+     *
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @Override
+    public List<OmsOrderStatistics> listOrderStatistics(String startDate, String endDate) {
+        List<OmsOrderStatistics> res = new ArrayList<>();
+        if (StringUtils.isNoneBlank(startDate, endDate)) {
+            OmsOrderQueryParam param = new OmsOrderQueryParam();
+            param.setStartDate(startDate);
+            param.setEndDate(endDate);
+            List<OmsOrder> list = orderDao.getList(param);
+            if (CollUtil.isNotEmpty(list)) {
+                Map<String, List<OmsOrder>> orderListGroupingByCreateTime = list.stream()
+                        .filter(item -> Objects.nonNull(item.getCreateTime()))
+                        .collect(Collectors.groupingBy(item -> DateTimeUtils.format(item.getCreateTime(), DateTimeUtils.YYYYMMDD_EN)));
+                if (CollUtil.isNotEmpty(orderListGroupingByCreateTime)) {
+                    for (Map.Entry<String, List<OmsOrder>> stringListEntry : orderListGroupingByCreateTime.entrySet()) {
+                        OmsOrderStatistics orderStatistics = new OmsOrderStatistics();
+                        orderStatistics.setDate(stringListEntry.getKey());
+                        List<OmsOrder> orders = stringListEntry.getValue();
+                        orderStatistics.setOrderCount((long) orders.size());
+                        BigDecimal totalAmount = orders.stream()
+                                .map(OmsOrder::getTotalAmount)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        orderStatistics.setOrderAmount(totalAmount);
+                        res.add(orderStatistics);
+                    }
+                }
+            }
+        }
+        return res;
     }
 }

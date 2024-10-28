@@ -55,4 +55,13 @@ public interface OmsOrderService {
      */
     @Transactional
     int updateNote(Long id, String note, Integer status);
+
+    /**
+     * 根据日期筛选订单统计
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @Transactional
+    List<OmsOrderStatistics> listOrderStatistics(String startDate, String endDate);
 }

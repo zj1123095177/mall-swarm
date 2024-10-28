@@ -1,33 +1,5 @@
 <template>
   <div class="app-container">
-    <div class="address-layout">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <div class="out-border">
-            <div class="layout-title">学习教程</div>
-            <div class="color-main address-content">
-              <a href="https://www.macrozheng.com" target="_blank">mall学习教程</a>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="out-border">
-            <div class="layout-title">视频教程</div>
-            <div class="color-main address-content">
-              <a href="https://www.macrozheng.com/mall/catalog/mall_video.html" target="_blank">mall视频教程（2023）</a>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="out-border">
-            <div class="layout-title">点Star支持项目</div>
-            <div class="color-main address-content">
-              <a href="https://github.com/macrozheng/mall" target="_blank">mall项目</a>
-            </div>
-          </div>
-        </el-col>
-      </el-row>
-    </div>
     <div class="total-layout">
       <el-row :gutter="20">
         <el-col :span="6">
@@ -61,13 +33,6 @@
         <!--</el-col>-->
       </el-row>
     </div>
-    <el-card class="mine-layout">
-      <div style="text-align: center">
-        <img width="150px" height="150px" src="http://macro-oss.oss-cn-shenzhen.aliyuncs.com/mall/banner/qrcode_for_macrozheng_258.jpg">
-      </div>
-      <div style="text-align: center">mall全套学习教程连载中！</div>
-      <div style="text-align: center;margin-top: 5px"><span class="color-main">关注公号</span>，第一时间获取。</div>
-    </el-card>
     <div class="un-handle-layout">
       <div class="layout-title">待处理事务</div>
       <div class="un-handle-content">
@@ -226,6 +191,7 @@
               range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
+              value-format="yyyy-MM-dd"
               @change="handleDateChange"
               :picker-options="pickerOptions">
             </el-date-picker>
@@ -245,10 +211,25 @@
 </template>
 
 <script>
+  import {listOrderStatistics} from '@/api/order'
   import {str2Date} from '@/utils/date';
   import img_home_order from '@/assets/images/home_order.png';
   import img_home_today_amount from '@/assets/images/home_today_amount.png';
   import img_home_yesterday_amount from '@/assets/images/home_yesterday_amount.png';
+  const defaultListQuery = {
+    startDate: null,
+    endDate: null,
+  };
+
+  function formatDate(date) {
+    const options = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    };
+    return date.toLocaleDateString('zh-CN', options);
+  }
+
   const DATA_FROM_BACKEND = {
     columns: ['date', 'orderCount','orderAmount'],
     rows: [
@@ -277,16 +258,16 @@
           shortcuts: [{
             text: '最近一周',
             onClick(picker) {
-              let start = new Date(2018,10,1);
-              const end = new Date(start.getTime() + 1000 * 60 * 60 * 24 * 7);
-              picker.$emit('pick', [start, end]);
+              let end = new Date();
+              let start = new Date(end.getTime() - 1000 * 60 * 60 * 24 * 7);
+              picker.$emit('pick', [formatDate(start), formatDate(end)]);
             }
           }, {
             text: '最近一月',
             onClick(picker) {
-              let start = new Date(2018,10,1);
-              const end = new Date(start.getTime() + 1000 * 60 * 60 * 24 * 30);
-              picker.$emit('pick', [start, end]);
+              let end = new Date();
+              let start = new Date(end.getTime() - 1000 * 60 * 60 * 24 * 30);
+              picker.$emit('pick', [formatDate(start), formatDate(end)]);
             }
           }]
         },
@@ -316,9 +297,9 @@
         this.getData();
       },
       initOrderCountDate(){
-        let start = new Date(2018,10,1);
-        const end = new Date(start.getTime() + 1000 * 60 * 60 * 24 * 7);
-        this.orderCountDate=[start,end];
+        let end = new Date();
+        let start = new Date(end.getTime() - 1000 * 60 * 60 * 24 * 7);
+        this.orderCountDate=[formatDate(start), formatDate(end)];
       },
       getData(){
         setTimeout(() => {
@@ -326,15 +307,23 @@
             columns: ['date', 'orderCount','orderAmount'],
             rows: []
           };
-          for(let i=0;i<DATA_FROM_BACKEND.rows.length;i++){
-            let item=DATA_FROM_BACKEND.rows[i];
-            let currDate=str2Date(item.date);
-            let start=this.orderCountDate[0];
-            let end=this.orderCountDate[1];
-            if(currDate.getTime()>=start.getTime()&&currDate.getTime()<=end.getTime()){
-              this.chartData.rows.push(item);
-            }
-          }
+          console.log(this.orderCountDate)
+          defaultListQuery.startDate = this.orderCountDate[0];
+          console.log(this.orderCountDate[0])
+          defaultListQuery.endDate = this.orderCountDate[1];
+          listOrderStatistics(defaultListQuery).then(response => {
+            this.list = response.data.list;
+            console.log(this.list)
+          });
+          // for (let i = 0; i < DATA_FROM_BACKEND.rows.length; i++) {
+          //   let item = DATA_FROM_BACKEND.rows[i];
+          //   let currDate = str2Date(item.date);
+          //   let start = this.orderCountDate[0];
+          //   let end = this.orderCountDate[1];
+          //   if (currDate.getTime() >= start.getTime() && currDate.getTime() <= end.getTime()) {
+          //     this.chartData.rows.push(item);
+          //   }
+          // }
           this.dataEmpty = false;
           this.loading = false
         }, 1000)
