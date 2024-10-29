@@ -212,7 +212,6 @@
 
 <script>
   import {listOrderStatistics} from '@/api/order'
-  import {str2Date} from '@/utils/date';
   import img_home_order from '@/assets/images/home_order.png';
   import img_home_today_amount from '@/assets/images/home_today_amount.png';
   import img_home_yesterday_amount from '@/assets/images/home_yesterday_amount.png';
@@ -222,34 +221,10 @@
   };
 
   function formatDate(date) {
-    const options = {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    };
-    return date.toLocaleDateString('zh-CN', options);
+    const isoString = date.toISOString();
+    return isoString.split('T')[0];
   }
 
-  const DATA_FROM_BACKEND = {
-    columns: ['date', 'orderCount','orderAmount'],
-    rows: [
-      {date: '2018-11-01', orderCount: 10, orderAmount: 1093},
-      {date: '2018-11-02', orderCount: 20, orderAmount: 2230},
-      {date: '2018-11-03', orderCount: 33, orderAmount: 3623},
-      {date: '2018-11-04', orderCount: 50, orderAmount: 6423},
-      {date: '2018-11-05', orderCount: 80, orderAmount: 8492},
-      {date: '2018-11-06', orderCount: 60, orderAmount: 6293},
-      {date: '2018-11-07', orderCount: 20, orderAmount: 2293},
-      {date: '2018-11-08', orderCount: 60, orderAmount: 6293},
-      {date: '2018-11-09', orderCount: 50, orderAmount: 5293},
-      {date: '2018-11-10', orderCount: 30, orderAmount: 3293},
-      {date: '2018-11-11', orderCount: 20, orderAmount: 2293},
-      {date: '2018-11-12', orderCount: 80, orderAmount: 8293},
-      {date: '2018-11-13', orderCount: 100, orderAmount: 10293},
-      {date: '2018-11-14', orderCount: 10, orderAmount: 1293},
-      {date: '2018-11-15', orderCount: 40, orderAmount: 4293}
-    ]
-  };
   export default {
     name: 'home',
     data() {
@@ -307,23 +282,11 @@
             columns: ['date', 'orderCount','orderAmount'],
             rows: []
           };
-          console.log(this.orderCountDate)
           defaultListQuery.startDate = this.orderCountDate[0];
-          console.log(this.orderCountDate[0])
           defaultListQuery.endDate = this.orderCountDate[1];
           listOrderStatistics(defaultListQuery).then(response => {
-            this.list = response.data.list;
-            console.log(this.list)
+            this.chartData.rows.push(...response.data);
           });
-          // for (let i = 0; i < DATA_FROM_BACKEND.rows.length; i++) {
-          //   let item = DATA_FROM_BACKEND.rows[i];
-          //   let currDate = str2Date(item.date);
-          //   let start = this.orderCountDate[0];
-          //   let end = this.orderCountDate[1];
-          //   if (currDate.getTime() >= start.getTime() && currDate.getTime() <= end.getTime()) {
-          //     this.chartData.rows.push(item);
-          //   }
-          // }
           this.dataEmpty = false;
           this.loading = false
         }, 1000)
